@@ -2,6 +2,8 @@
 #include <LoRa.h>
 #include <Servo.h>
 
+// Project FishingBoatApp
+
 // Pins from Lora module connected to Arduino
 // Ground Pin connected to Ground Arduino
 const int SS_Pin = 10;

@@ -20,14 +20,8 @@ const int Servo_Right_Pin_Gate = 6;
 // Digital Pin to control the relay which must be connected with dc motor;
 const int Relay_1_Pin = 7;
 
-// driver L298N -> PIN A Enable connected to analog pin A4
+// ESC wire connected to analog pin A4
 const int Speed_Engine = A4;
-
-// driver L298N -> PIN IN1 connected to digital pin 3 
-const int IN_1_Pin = 3;
-
-// driver L298N -> PIN IN2 connected to digital pin 4 
-const int IN_2_Pin = 4;
 
 // Reference for servo direction
 Servo servoDirection;
@@ -41,6 +35,8 @@ Servo servoRightDoor;
 unsigned int powerEngine = 0;
 unsigned int stopEngine = 0;
 
+unsigned int maxSpeed = 255;
+
 unsigned int changeDirection = 90;
 
 int newValue = 0;
@@ -50,8 +46,11 @@ int closedDoorValue = 0;
 
 void setup() {
   pinMode(Relay_1_Pin, OUTPUT);
+  pinMode(Speed_Engine, OUTPUT);
  
   digitalWrite(Relay_1_Pin, LOW);
+
+  analogWrite(Speed_Engine, 0);
 
   servoDirection.attach(Servo_Pin_Direction);
 
@@ -87,13 +86,15 @@ void loop() {
 void controlBoat(String receiveMessage, unsigned int & powerEngine, unsigned int & changeDirection) {
 
    if(receiveMessage == "ON") {
-      // powerEngine++;
       digitalWrite(Relay_1_Pin, HIGH);
-      Serial.println("Engine Started");
+      powerEngine = powerEngine < maxSpeed ? powerEngine++ : maxSpeed;
+      analogWrite(Speed_Engine, powerEngine);
+      Serial.println("Engine Running!");
     } else if(receiveMessage == "OFF") {
-      // powerEngine--;
       digitalWrite(Relay_1_Pin, LOW);
-      Serial.println("Engine stopped!");
+      powerEngine = powerEngine == 0 ? stopEngine : powerEngine--;
+      analogWrite(Speed_Engine, powerEngine);
+      Serial.println("Brake pressed!");
     } else if (receiveMessage == "LEFT") {
       newValue = changeDirection - 1;
       servoDirection.write(newValue); // Move Left the boat
